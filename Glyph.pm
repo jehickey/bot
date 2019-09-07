@@ -8,7 +8,8 @@ use Data::Dumper;
 use overload 
 	'""' => \&toString,
 	'==' => \&isEqual,
-	'!=' => \&isNotEqual;
+	'!=' => \&isNotEqual,
+	'eq' => \&isEqual;
 
 my $last_id = 0;
 
