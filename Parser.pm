@@ -70,7 +70,7 @@ sub parse {
 		
 		if ($glyph->isa("terminator")) {						#saw a sentance terminator
 			if ($i == @glyphs-1) {								#at the end of the sentence
-				splice (@glyphs, $i, 1);
+				splice (@glyphs, $i, 1);						#remove it
 				$i--;
 			}
 		}
@@ -90,18 +90,30 @@ sub deparse {
 		if ($glyph->isa("noun")) {
 			#print "noun: $glyph\n";
 			#print Dumper $glyph;
-			if ($glyph->hasa("article")) {
+			
+			#needs to be a while (), and has to remove the article from the noun (pop)
+			if (my $article = $glyph->hasa("article")) {	#needs to remove the article
+				my $word = $dict->search($article);
+				
 				#prepend it to noun
-				#print "got article\n";
-				splice (@result, $i, 0, Glyph->new("art"));
+				if ($word) {splice (@result, $i, 0, $word);}
 				$i++;
 			}
+			#get a list of any adjectives it has
+			my @adjectives = ();
+			if (my $adj = $glyph->hasa("adjective")) {
+				print "!!! $adj\n";
+				push (@adjectives, $adj);
+			}
+			#add them to the adjective list (removing them from origin)
+			
 			
 		}
 		if ($glyph->isa("verb")) {
 		
 		}
 	}
+	print Dumper @result;
 	return "@result";
 }
 

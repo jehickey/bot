@@ -96,10 +96,10 @@ subtest payload => sub {
 	my $rotten = Glyph->new("rotten");
 	is ($apple->add($rotten),1, "Glyph accepts payload");
 	my $apple3 = $apple->clone();		#cloned after we added something to it
-	is ($apple->has($rotten),  1, "Check for true modifier by reference");
-	is ($apple->has("rotten"), 1, "Check for true modifier by name");
+	is ($apple->has($rotten),  $rotten, "Check for true modifier by reference");
+	is ($apple->has("rotten"), $rotten, "Check for true modifier by name");
 	#is ($apple2->has("rotten"), 0, "Changes to one symbol do not impact a copy");
-	is ($apple3->has("rotten"), 1, "Modifiers carry over during copy");
+	is ($apple3->has("rotten"), 'rotten', "Modifiers carry over during copy");
 };
 
 #verify glyph parentage works

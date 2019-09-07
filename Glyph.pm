@@ -83,25 +83,30 @@ sub isa {
 #Does this symbol carry a specific subsymbol?
 sub has {
 	my ($self, $glyph) = @_;
-	if ("$glyph" eq "") {return 0;}
-	if ("$self" eq "$glyph") {return 1;}
+	if ("$glyph" eq "") {return Glyph->new();}
+	if ("$self" eq "$glyph") {return $self->clone();}
 	foreach my $g (@{$self->{payload}}) {
-		if ("$g" eq "$glyph") {return 1;}
+		if ("$g" eq "$glyph") {return $g->clone();}
 	}
-    return 0;
+    return Glyph->new();
 }
 
 #Does this symbol carry anything related to this symbol?
 sub hasa {
 	my ($self, $glyph) = @_;
-	if ("$glyph" eq "") {return 0;}
-	if ("$self" eq "$glyph") {return 1;}
+	if ("$glyph" eq "") {return Glyph->new();}
+	if ("$self" eq "$glyph") {return $self->clone();}
 	foreach my $g (@{$self->{payload}}) {
-		if ($g->isa("$glyph")) {return 1;}
+		if ($g->isa("$glyph")) {return $g->clone();}
 	}
-    return 0;
+    return Glyph->new();
 }
 
+
+sub payload {
+	my ($self) = @_;
+	return $self->{payload};
+}
 
 
 #gets or sets the top parent

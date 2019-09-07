@@ -33,7 +33,7 @@ sub new {
 sub get {
 	if (!$lex) {return;}
 
-	my ($self, $word, $def) = @_;
+	my ($self, $word, $def, @traits) = @_;
 	$word = _clean($word);
 	$def  = _clean($def);
 	if (!$word) {return Glyph->new();}
@@ -68,6 +68,18 @@ sub get {
 	}
 	
 	return $result;
+}
+
+
+#search the dictionary for the best match it can find for a given symbol
+sub search {
+	my ($self, $filter) = @_;
+	if (!$filter) {$filter = Glyph->new();}	
+	
+	foreach my $entry (@{$self->{index}}) {
+		#compare to filter
+		
+	}
 }
 
 
