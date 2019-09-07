@@ -1,0 +1,493 @@
+{
+   "tense modifier" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "tense modifier",
+      "id" : 0,
+      "parents" : [
+         "element",
+         "grammar"
+      ]
+   },
+   "plural" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "plural",
+      "id" : 0,
+      "parents" : [
+         "plurality",
+         "element",
+         "grammar"
+      ]
+   },
+   "," : {
+      "value" : "",
+      "payload" : [],
+      "name" : ",",
+      "id" : 0,
+      "parents" : [
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "terminator" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "terminator",
+      "id" : 0,
+      "parents" : [
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "\"" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "\"",
+      "id" : 0,
+      "parents" : [
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "statement" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "statement",
+      "id" : 0,
+      "parents" : []
+   },
+   "future" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "future",
+      "id" : 0,
+      "parents" : [
+         "tense",
+         "element",
+         "grammar"
+      ]
+   },
+   "verb" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "verb",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "past" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "past",
+      "id" : 0,
+      "parents" : [
+         "tense",
+         "element",
+         "grammar"
+      ]
+   },
+   "interjection" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "interjection",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "singular" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "singular",
+      "id" : 0,
+      "parents" : [
+         "plurality",
+         "element",
+         "grammar"
+      ]
+   },
+   "symbol" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "symbol",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "male" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "male",
+      "id" : 0,
+      "parents" : [
+         "gender",
+         "element",
+         "grammar"
+      ]
+   },
+   "subject" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "subject",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "element" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "element",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "?" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "?",
+      "id" : 0,
+      "parents" : [
+         "terminator",
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "word" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "word",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "female" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "female",
+      "id" : 0,
+      "parents" : [
+         "gender",
+         "element",
+         "grammar"
+      ]
+   },
+   "abstract" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "abstract",
+      "id" : 0,
+      "parents" : []
+   },
+   "preposition" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "preposition",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "plurality" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "plurality",
+      "id" : 0,
+      "parents" : [
+         "element",
+         "grammar"
+      ]
+   },
+   "place" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "place",
+      "id" : 0,
+      "parents" : []
+   },
+   "neutral" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "neutral",
+      "id" : 0,
+      "parents" : [
+         "gender",
+         "element",
+         "grammar"
+      ]
+   },
+   "indefinite" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "indefinite",
+      "id" : 0,
+      "parents" : [
+         "article",
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "predicate" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "predicate",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "person" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "person",
+      "id" : 0,
+      "parents" : []
+   },
+   "adverb" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "adverb",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "error" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "error",
+      "id" : 0,
+      "parents" : []
+   },
+   "." : {
+      "value" : "",
+      "payload" : [],
+      "name" : ".",
+      "id" : 0,
+      "parents" : [
+         "terminator",
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "proper" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "proper",
+      "id" : 0,
+      "parents" : [
+         "noun",
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "article" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "article",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "punctuation" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "punctuation",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "definite" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "definite",
+      "id" : 0,
+      "parents" : [
+         "article",
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "gender" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "gender",
+      "id" : 0,
+      "parents" : [
+         "element",
+         "grammar"
+      ]
+   },
+   "command" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "command",
+      "id" : 0,
+      "parents" : []
+   },
+   "!" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "!",
+      "id" : 0,
+      "parents" : [
+         "terminator",
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "conjunction" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "conjunction",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "progressive" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "progressive",
+      "id" : 0,
+      "parents" : [
+         "tense modifier",
+         "element",
+         "grammar"
+      ]
+   },
+   "quantity" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "quantity",
+      "id" : 0,
+      "parents" : []
+   },
+   "noun" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "noun",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "conditional" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "conditional",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "perfect" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "perfect",
+      "id" : 0,
+      "parents" : [
+         "tense modifier",
+         "element",
+         "grammar"
+      ]
+   },
+   "tense" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "tense",
+      "id" : 0,
+      "parents" : [
+         "element",
+         "grammar"
+      ]
+   },
+   "grammar" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "grammar",
+      "id" : 0,
+      "parents" : []
+   },
+   "pronoun" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "pronoun",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "adjective" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "adjective",
+      "id" : 0,
+      "parents" : [
+         "part of speech",
+         "grammar"
+      ]
+   },
+   "present" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "present",
+      "id" : 0,
+      "parents" : [
+         "tense",
+         "element",
+         "grammar"
+      ]
+   },
+   "multiple" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "multiple",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   },
+   "thing" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "thing",
+      "id" : 0,
+      "parents" : []
+   },
+   "'" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "'",
+      "id" : 0,
+      "parents" : [
+         "punctuation",
+         "grammar"
+      ]
+   },
+   "part of speech" : {
+      "value" : "",
+      "payload" : [],
+      "name" : "part of speech",
+      "id" : 0,
+      "parents" : [
+         "grammar"
+      ]
+   }
+}
+

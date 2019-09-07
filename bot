@@ -1,108 +1,60 @@
 #!/usr/bin/perl
-#test
 use strict;
 use warnings;
+use Storable;
 use Data::Dumper;
 
 use Glyph;
 use Lexicon;
-use Word;
+use Dictionary;
 use Parser;
 
 my $lex = Lexicon->new();
-$lex->{verbose} = 0;
+$lex->load();
+my $dict = Dictionary->new($lex);
 
 
+$dict->add("the",    "definite");
+$dict->add("a",		 "indefinite");
+$dict->add("boy", 	 "noun");
+$dict->add("dropped", "verb");
+$dict->add("ball", 	 "noun");
+$dict->add("tall", 	 "adjective");
+$dict->add("big", 	 "adjective");
+$dict->add("red", 	 "adjective");
+$dict->add(".", 	 "terminator");
 
+print $dict->list();
 
-#my $vehicle = Glyph->new("vehicle");
-$lex->add("null");
-$lex->add("animal");
-$lex->add("vertebrate", "animal");
-$lex->add("mammal", "vertebrate");
-$lex->add("canid", "mammal");
-$lex->add("dog", "canid");
-$lex->add("fox", "canid");
-$lex->add("jackal", "canid");
-$lex->add("coyote", "canid");
-$lex->add("felid", "mammal");
-$lex->add("cat", "felid");
-$lex->add("lion", "felid");
-$lex->add("tiger", "felid");
-$lex->add("jaguar", "felid");
-$lex->add("leopard", "felid");
-$lex->add("caracal", "felid");
-$lex->add("primate", "mammal");
-$lex->add("monkey", "primate");
-$lex->add("howler", "monkey");
-$lex->add("capuchin", "monkey");
-$lex->add("babboon", "monkey");
-$lex->add("ape", "primate");
-$lex->add("chimpanzee", "ape");
-$lex->add("gorilla", "ape");
-$lex->add("orangutan", "ape");
-$lex->add("human", "ape");
+print "\n";
 
-my $sym  = $lex->get("human");
-print Dumper \$sym;
-my $sym2 = $lex->get("ape");
-print Dumper $sym2;
-my $sym3 = $lex->get("felid");
-print Dumper $sym3;
+my $parser = Parser->new($lex, $dict);
+my $input = "the tall boy dropped a big red ball.";
+print "INPUT:     $input\n";
 
-if ($sym) {
-	print $sym->is("human")  . "=1\n";	#true
-	print $sym->is($sym)     . "=1\n";	#true
-	print $sym->is("ape")    . "=0\n";	#false
-	print $sym->is($sym2)    . "=0\n";	#false
-	print $sym->isa("ape")   . "=1\n";	#true
-	print $sym->isa($sym2)   . "=1\n";	#true
-	print $sym->isa("felid") . "=0\n";	#false
-	print $sym->isa($sym3)   . "=0\n";	#false
-	print $sym->isa("animal"). "=1\n";	#false
-}
+my @words = $parser->parse($input);
+#print Dumper \@words;
+print "PARSED:    @words\n";
 
-#my $car = Glyph->new("car", "vehicle");
+print "EXPANDED:  ";
+foreach my $g (@words) {print $g->toString(0);}
+print "\n";
 
-#print "Lex count: " . $lex->count() . "\n";
-print $lex->list() . "\n";
-$lex->write();
+my @words2 = $parser->deparse(@words);
 
-#print "$sym\n";
+print "DEPARSED:  @words2\n";
 
-#print $sym->{id}   . "\n";
-#print $sym->{name} . "\n";
+print "\n";
+exit;
+my $str = "noun>boy:definite:adjective>tall";
+print "FORMATTED: $str\n";
 
-#$sym2->add(Glyph->new("Delta"));
-#$sym->add($sym2);
-#$sym->add(Glyph->new("gamma"));
-#print "$sym\n";
+my $g = Glyph->new($str);
+print "EXPANDED:  " . $g->toString(0) . "\n";
+print Dumper $g;	
+	
+#print Dumper @res;
 
-#$lex->add($sym);
-#$lex->add($sym2);
-#$lex->add($sym);
-#print Dumper $sym2;
-#$lex->add($sym2);
-
-
-#print Dumper $lex->get($sym);
-#print Dumper $lex->get("beta");
-#print Dumper $lex->get("gamma");
-
-
-
-
-my $input = "the boy dropped the ball";
-my $parser = Parser->new();
-my @wordsx = $parser->process($input);
-
-#print "result:\n" . Dumper($parser->words) . "\n";
-#print "Word count: " . $parser->wordcount . "\n";
-
-foreach my $word ($parser->words) {
-#    print "\n";
-#    $word->Dump();
-}
 
 
 print "\n\n";

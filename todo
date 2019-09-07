@@ -1,0 +1,151 @@
+Status:
+	* Glyph, Lexicon, Dictionary, and Parser classes are up
+		* care lexicon is hardcoded for now, but can load from a file
+		* glyph can instantiate off of complex names
+	* Dictionary is split from Lexicon (so Lexicon is only internal words, all else goes in Dictionary)
+	* beginnings of a parser
+		* dev copy takes a string, parses it, then turns it back into a string
+
+
+Changed:
+	* fixed deep copy bug (by using Storable::dclone)
+	* improved truth/false checking (and eliminated "null" as a type)
+	* removed all outside references to internal hash properties
+
+Changes:
+	* add "value" to glyphs (only used when relevant)
+	* make a word a value of a grammar glyph, not it's actual name
+
+
+Refactoring:
+	* eliminate direct access to glyph hash
+		* still a little work to be done
+	
+
+Issues:
+
+
+
+
+Todo list:
+	* parser needs to rely on dictionary, with lexicon as a fallback
+	* work on dictionary lookups:
+		* looking up the definition for a word
+			* entries need to contain more details (singular, etc)
+				* entries can contain multiple items if multiple apply (singular and plural, etc)
+		* looking up the word for a definition
+			* dictionary is made to just let the parser give it a glyph and let it find the word
+			* dictionary will fallback slightly if there's no exact definition
+	
+	
+	* lists - support for a glyph acting as a list
+		* lex type "data>list"
+		* adds list manipulation to glyphs
+			* add, remove, insert symbols before or after a target symbol
+			* split a glyph, inserting the split before or after
+				* split(type) removes that type from the glyph and returns the removed modifier
+				* pop(type)
+		* greatly 
+
+	* glyph list manipulation:
+		* bud - split a modifier from a symbol and insert it (before or after it or another symbol)
+		* need a function to target a specific word in the list
+		* pointer that keeps track of where the cursor is on the list
+			* the cursor roves from one symbol to the next, focusing on one symbol
+			
+	* get Parser to use the dictionary instead of the lexicon (which more represents types)
+	* add POD to the libraries, and use that to build documentation
+	* further development of grammar processing
+		* streamline:
+			* add support for symbol manipulation within a symbol
+			* convert existing code into rules
+			* more overloading, but must be self-consistent
+	* develop parser's symbol manipulation into something more general purpose
+		* move these functions to the glyph itself (manipulating its payload)
+			* this means payloads must now allow duplication
+		* this should help obviate the need to manipulate arrays directly
+
+
+
+New Glyph Functions:
+	* overloads:
+		* look for a way to impersonate an array if referenced like one - return payload
+
+	* info:
+		* 
+	* payload:
+		* payload()   - returns the payload as an array of whatever
+		* clear()     - empties the payload.
+		* count()     - the number of payload items 
+		* peek()      - returns a copy of the matching payload item.  accepts a type or an index
+		* pop()       - returns the matching payload item, removing it from the owner (doubles as a delete).  type or index.
+		* has(type)   - returns a copy of payload with a direct match (first one it sees)
+		* hasa(type)  - returns a copy of any payload that has a parentage match (first one it sees)
+	* parentage:
+		* is(type)
+		* isa(type)
+		* parent()         - returns the immediate parent
+		* parents()        - returns an array (or "list"?) of all parents
+	* spawning:
+		* new(name)        - creates a brand new glyph, a null if no params, or a clone with the same id if given a glyph
+		* error(message)   - returns an error glyph w/ embedded message
+		* clone()          - creates a deep copy of the glyph.  ID preserved.
+		* spawn()          - creates a new glyph with the creator as its parent.  new id.
+		
+	* list manipulation:
+		* {cursor}          - the index id the cursor is currently at
+		* return()			- returns the cursor to its previous position (only tracks one)
+		* next()			- moves the cursor backwards by one
+		* previous()		- moves the cursor ahead by one
+		* cursor()			- gets or sets the current index
+		* cleave(type) 		- removes an item from the targeted word and inserts it as a word before or after
+		* merge(next/prev)  - 
+		
+
+Editing Walkthrough:
+	* given a symbol, marked as a list, with a payload of symbols
+	* rules must return if they acted or not - and need a way to tell if they're necessary
+	* iterative function that loops from index 0 to end (adjusts for changes to array)
+		* peek(index) - repeats until none are true (or too many loops - stuck rule)
+			* isa noun?
+				* hasa article?    	- cleave(article, -1)		#move it to before
+				* hasa adjective   	- cleave(adjective, -1)		#move it to before (but after previous insert)
+				* isa proper noun?
+					* !capitalized?	- capitalize word
+			* isa verb?
+				* hasa tense?
+					* look for dictionary entry for that verb and that tense
+						* need to be able to use "verb:past progressive"
+
+
+
+
+Symbol Stream Manipulation:
+	* all streams of symbols are stored within another symbol
+
+
+Serialization:
+	* glyphs may need to do their own serialization (avoid if possible)
+		* makes it easier to ignore unnecessary info (like parentage)
+
+Glyph Changes:
+	* see if full lineage can be stored non-publicly (since the outside never needs it directly)
+		* this keeps it from being serialized
+		* a basic "parent" can be restored, which can be checked publicly and is serialized
+		* this means that lineage will have to be rebuilt on glyph init (based on lexicon)
+
+
+Standards:
+	* strict layering:
+		* Glyph never touches Lexicon, Dictionary, or other higher level classes
+			* this means that all ancestry is purely by name or number
+		* Lexicon never touches Dictionary or Parser, though it relies heavily on Glyph
+		* Dictionary never touches Parser, though it relies heavily on Glyph and Lexicon
+	* any function that normally returns a glyph must ALWAYS return a glyph
+		* NULL glyphs are used when there is no data, though ERROR glyphs may go into use too
+
+
+
+
+
+

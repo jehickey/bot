@@ -6,7 +6,10 @@ require_ok ('Glyph');
 require_ok ('Lexicon');
 
 my $lex = Lexicon->new();
-ok (ref $lex eq "Lexicon", "Object instantiates");
+ok (ref $lex eq "Lexicon", "Lexicon instantiates");
+
+
+
 
 #Verbose mode
 is ($lex->{verbose}, 0, "Verbose off by default");
@@ -14,16 +17,34 @@ is ($lex->debug(),   0, "No verbose output");
 $lex->{verbose} = 1;
 is ($lex->debug(),   1, "Verbose output");
 $lex->{verbose} = 0;	#turn it back off
-
 is ($lex->count(), 0,	 "Lexicon is empty (no defaults)");
-ok (!$lex->add(),		 "Lexicon rejects a parameterlesss call to add()");
-ok (!$lex->add(""),		 "Lexicon rejects an empty string");
 
-ok ($lex->add("animal"), "Lexicon accepts new entries");
-ok (!$lex->add("animal"),"Lexicon rejected a duplicate item");
-is ($lex->count(), 1,	 "Lexicon contains one entry");
+ok (!$lex->add(),		 		 "Lexicon rejects a parameterlesss call to add()");
+ok ($lex->add()->has("error"),	 "null return has an error glyph associated with it");
+ok (!$lex->add(""),		 		 "Lexicon rejects an empty string");
+
+ok ($lex->add("animal"),  "Lexicon accepts new entries");
+ok (!$lex->add("animal"), "Lexicon rejected a duplicate item");
+ok ($lex->add("plant"),   "Lexicon accepts an unrelated root item");
+ok ($lex->add("chicken", "animal"),"Lexicon accepts a child of an existing parent");
+ok (!$lex->add("quartz", "mineral"),"Lexicon rejects a child of a nonexistant parent");
+is ($lex->count(), 3,	 "Lexicon contains one entry");
+
+my $lex2 = Lexicon->new();
+ok (ref $lex2 eq "Lexicon", "A second Lexicon instantiates");
+$lex2->add("vehicle");
+$lex2->add("car", "vehicle");
+is ($lex2->get("car")->parent(), "vehicle", "Second Lexicon can retrieve new words");
+is ($lex2->count(), 2, "Second Lexicon only has no cross-contamination");
+is ($lex->count(),  3, "Original Lexicon has no cross-contamination");
+
 $lex->clear();
 is ($lex->count(), 0,	 "Lexicon has been cleared");
+
+$lex->load();
+ok ($lex->count() > 0, "Lexicon loaded with " . $lex->count() . " glyphs");
+$lex->clear();
+
 
 $lex->add("animal");
 $lex->add("vertebrate", "animal");
@@ -51,10 +72,11 @@ $lex->add("gorilla", "ape");
 $lex->add("orangutan", "ape");
 $lex->add("human", "ape");
 
+
 my $sym  = $lex->get("human");
 is (ref $sym, "Glyph", "get() returns a glyph");
 is ("$sym", "human", "get() returns the right glyph");
-is_deeply (\@{$sym->{parents}}, ['ape','primate','mammal','vertebrate','animal'], "get() result has the correct parentage");
+is_deeply ($sym->parents(), ['ape','primate','mammal','vertebrate','animal'], "get() result has the correct parentage");
 my $sym2 = $lex->get("ape");
 is ("$sym2", "ape", "get() returns the right glyph");
 my $sym3 = $lex->get("felid");
