@@ -1,0 +1,233 @@
+Logic Examples
+
+* search dictionary (by word)
+	* $dict->get("the");
+	* get hash entry for {"the"}
+		* if not found, return the symbol as-is (or add undefined)
+
+* search dictionary (by definition)
+
+
+
+* expanding a noun (with extra data in it)
+	* finding the word
+		* generally any noun should be generated from a subject
+	* spinning off an article
+		* make sure it has critical information from noun
+			* get list of important traits from "article" definition
+			* pull anything in that list from the noun (including all children)
+		* pass article glyph through Dictionary
+		* result should be the right word
+	* spinning
+	
+	
+* getting back multiple words from a dictionary check
+	* lookup "test"
+		* get back a noun, verb, and adjective
+	
+
+Rule Processing:
+	* made to run sequentially, often with some recursion
+		* tracking to ensure there's no infinite recursion
+	* each rule goes through the entire syntax before moving to the next rule
+		* a "break" option moves on to the next rule immediately
+	* each rule marks if it was triggered
+		* loops end when none of their rules get activated (or break)
+		* processing ends when the first loop ceases
+	* a rule can contain other rules as a predicate (making a new loop)
+	* format:  conditional : predicate
+		* conditional - conditions that trigger it
+		* predicate   - action to perform (and a way to tell if done)
+	* predicates must be able to verify if they would change anything if they run
+		* an unverifiable predicate would either never mark as triggered or loop until stopped
+	* predicates follow order of operations (LEFT DEFINE(word) means LEFT applies to DEFINE(word))
+		
+		
+	* multiple definitions
+		* when there are multiple definitions for a word being defined:
+			* nothing is done at first until the other words are defined
+			* one of the first rules searchers for multiples and tries to address them
+				* using nearby words:
+					it adds or subtracts from the scores
+					it eliminates options (sparingly)
+				* it tries to select one meaning as the most likely, if one stands out	
+		* create threads when a word has multiple definitions
+			* each thread is a new parser process
+				* when done its results go to a list
+			* each time the rules have a problem they reduce that thread's score
+			* the highest scoring thread becomes the only thread
+		
+	* all functions work like a pipeline, able to feed into other functions
+	* DEFINE looks up the type for a word
+		* when translating in, some words are substituted for root forms
+			* "threw" becomes [past simple>throw]
+			* "chickens" becomes [noun>chicken:plur]
+			* "a" becomes [indef>a]
+		* it modifies the word it's defining, and returns it
+	* LEFT moves a glyph from payload to the left of the glyph
+	* RIGHT moves a glyph from payload to the right of the glyph
+	* @list is a list automatically kept by each loop
+		* @list always assumes the parent loop's list
+		* it must be used by the end of the loop (maybe referencable from parent loop?)
+	* NEXT() finds the next type in the sequence (if any)
+		* has a "break on" parameter, so it won't go past something
+	* PREV() finds the previous type in the sequence (if any)
+	* MERGE(a,b) - a and its payload becomes a set of items in b's payload
+		* duplicates are removed - near duplicates may need attention
+		* values are concatenated with a space
+
+
+Operators used in Rules (for simplification)
+	+= add an item to a glyph
+	-= remove an item from a glyph
+	~~ ISA match ($glyph~~$parent)
+	* it 
+
+
+Rule Variales:
+	@list = a list for the use of the loop (should it need it)
+		* most likely a glyph of its own
+		* needs to allow scoring and sorting and selection
+
+Rule Commands:
+	IF conditional
+	IS 1/0
+	ISA 1/0
+	HAS g
+	HASA g			
+	DEFINE g = g
+	LEFT g
+	RIGHT g
+	MOVE g > @list
+	SORT @list
+	POP g
+	NEXT g
+	PREV g
+
+Rule Structure:
+	* a sequence of commands (each reflected in lexicon)
+
+Lexicon Representation:
+	* all commands are part of the same Logic family
+	* these commands will be used for more extended work later
+	* as far as possible nothing should have to be specific to language unless it has to be
+	* subbranches
+		* language (DEFINE)
+		* list manipulation (LEFT RIGHT MOVE POP SORT)
+		* comparison (IS ISA)
+		
+			
+Rule Processor Details:
+	Line:
+		a RULE glyph carrying a list of symbols representing what's going on
+		
+		
+		
+
+Rules: (symbol to language)
+	1 IF noun
+		A IF HASA article
+			a LEFT DEFINE(article)  	//loops until all articles are ejected
+		B IF HASA posessive pronoun?
+			a LEFT DEFINE(posessive)
+			
+		C IF HASA adjective
+			a MOVE adjective > @list   		//end result, all in noun get added
+			b SORT @list, adjective-order 	//end result, list 
+			c LEFT DEFINE(adjective)		//insert list to left of word
+	2 IF verb
+	
+	
+Rules: (language to symbol) - assume words are already defined
+	0 ISA unknown									//this is how all words start
+		if !DEFINE()								//this defines it, and activates if it failed to define it
+			IF HAS cap								//this word was capitalized
+				IF NEXT=unknown && NEXT HAS cap		//the next word is also unknown and capitalized
+					JOIN NEXT						//the two words will combine into one
+					TYPE=proper noun				//it's now a proper noun
+				
+			
+	0 ISA multiple
+		A IF !PREV							//this is the first word (do these first)
+			IF NEXT=article
+				+verb
+			IF NEXT=noun
+				+article
+			IF NEXT=noun:plur
+				+adjective
+		B IF !NEXT							//this is the last word (done after prev)
+		C IF HASA article
+			IF NEXT=noun, +article
+	1 ISA article
+		A IF HAS cap && (NEXT(noun) !HAS capitalized), POP capitalized		//don't store capitalization if it's not important
+		B MERGE NEXT(noun)
+	2 ISA adjective
+		A MERGE NEXT(noun)
+	3 ISA posessive pronoun
+	4 ISA noun
+		ISA proper noun
+			POP cap							//it's no longer necessary
+	
+Examples:
+	"The tall boy threw a red big ball"
+	[def>the:sing:cap] [adj>tall:height] [noun>boy:sing] [past simple>throw] [indef>a:sing] [adj>red:color] [adj>big:size] [noun>ball:sing]
+		1 IS article
+			1A "the"  IS article, [boy!cap], article-=cap
+			1A "a"    IS article, [ball!cap], article-=cap
+			1B "the"  IS article - merge next noun > [noun>boy:sing:def]
+			1B "a"    IS article - merge next noun > [noun>ball:sing:indef]
+		2 IS adjective
+			2A "tall" IS adj - merge next noun > [noun>boy:sing:def:adj>tall]
+			2A "red"  IS adj - merge next noun > [noun>ball:sing:indef:adj>red]
+			2A "big"  IS adj - merge next noun > [noun>ball:sing:indef:adj>red:adj>big]
+	[noun>boy:sing:def:adj>tall] [verb>threw:past] [noun>ball:sing:indef:adj>red:adj>big]
+	template: noun1 verb1 noun2
+		* indicative mood: subject=noun1, predicate=verb1+noun2
+		* subject: [noun>boy]
+		* predicate: [verb>throw] [noun>ball]
+
+	"The money is inside the cabinet"   (inside can be prep, adv, or noun)
+	[def>the:sing:cap] [noun>money] [verb>is] [prep>inside] [def>the:sing] [noun>cabinet]
+	1: [noun>money:def:sing] [verb>is] [prep>inside] [noun>cabinet:def:sing]
+	2: -no adjectives-
+	T: [noun] [is] [prep] [noun]
+	
+	
+	"Alan Turing was born in Maida Vale. His father was part of a family of merchants from Scotland. His mother, Ethel Sara, was the daughter of an engineer."
+		"Alan Turing was born in Maida Vale"
+		[?>alan:cap] [?>turing:cap] [past>is] [verb>born] [prep>in] [?>maida:cap] [?>vale:cap]
+			* two capitalized unknowns are probably a compound proper noun
+		[proper>alan turing] [past>is] [verb>born] [prep>in] [proper>maida vale]
+			* combine "is" with the verb (adopting its tense and other info)
+		[proper>alan turing] [past>born] [prep>in] [proper>maida vale]
+		T: 
+		
+		"His father was part of a family of merchants from Scotland."
+		"His mother, Ethel Sara, was the daughter of an engineer."
+
+	
+Functionality Needed:
+	* lexicon needs gramatical mood (imperative, 
+	* dictionary returns a best-match (down to part-of-speech)
+		* without plurality, dictionary assumes singular
+	* a "multiple" grammar structure that represents multiple parts of speech
+	* a list of traits for an entry
+		* "the" - definite article (singular)
+		* traits would ideally be built into the definition
+	* a way to score dictionary results
+		* a "semi-match" result should provide an uncertainty factor
+		* multiple options need a way to be scored
+	* a way for a subject to spin off a noun loaded with relevant data
+		
+		
+Working through variables:
+	* variables are any data with no value
+	* if it encounters a variable of unknown value:
+		* it looks for a formula table for getting that value
+			* recursive - it will do the same for any variable it finds there
+			* some tracking is required to break out of loops
+		* eventually it will either have an answer or unknown
+		
+		
+		
+		

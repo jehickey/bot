@@ -1,0 +1,100 @@
+Docs
+
+
+Layers:
+	executive		Session
+	linguistic		Parser
+	knowledge		Dictionary, Taxon, Kbase
+	symbolic		Glyph
+	identity		Lexicon
+	core			Logger
+
+
+Lexicon
+	new     ()				 = reference to oobject
+	get     ($name)			 = name of parent (or itself for root)
+	is      ($a, $b)		 = bool (0/1)
+	isa     ($a, $b)		 = bool (0/1)
+	--------
+	add     ($name, $parent) = bool (0/1)
+	clear   ()				 = void
+	count   ()				 = int
+	list	()				 = @list
+	load	()				 = bool
+	save	()				 = bool
+
+
+IS     - returns true if type is exactly the same (no inheritance)
+ISA    - returns true if type is equal or descended from the type
+ISLIKE - returns true if type is a peer or the same (if both descend from the same parent)
+
+
+glyph changes:
+	* names are now purely a type, not data
+	* add "value" - usually a number or string (not symbols)
+		* value is always defined, but '' if empty (not zero)
+		* a "noun" would have a value for its word
+		* a "number" would have a value for its numeric data
+	* overloads
+		+ add item from clone
+		- remove item from clone
+		+= add item
+		-= remove item
+Glyph:
+	new		($type)			 = creates a new glyph of type $type (or clone of a $glyph)
+	
+	"" 		treats a glyph as its type
+	== 		are two glyphs equal?  (is())
+	!= 		are two glyphs not equal? (is())
+	eq		are two glyphs equal (same as ==)
+	-identity-
+	is		($b)			 bool (0/1)
+	isa		($b)			 bool (0/1)
+	name	($name)			 returns the name (or sets it to $name)
+	type	($type)			 gets (or sets) the glyph type
+?	trim	($ancestor)		 makes this glyph a more generic ancestor
+	-spawning
+?	spawn	()				 creates a copy of itself as a child of itself
+	clone	()				 produces a reference-safe deep copy of the glyph
+	-payload-
+	count	($filter)		 int - all in payload (or just matches)
+	has		($type)			 $glyph returns a copy of match (=true)
+	hasa	($type)			 $glyph returns a copy of match (=true)
+	collapse()				 converts the glyph to the highest-scored item (or itself) and clears payload
+	list	($filter)		  
+	pop		($filter)		 $Glyph - returns and removes a single item (or from cursor pos)
+	popall	($filter)		 @Glyph - returns and removes all matching items (or from cursor pos)
+	cursor  ($target)		 $glyph - returns or sets the current cursor position
+	prepend ($glyph)		 adds a glyph before the cursor (cursor stays with target)
+	append  ($glyph)		 adds a glyph after the cursor (cursor doesn't move)
+	merge	($glyph)		 merges a glyph's payload in
+	add		($glyph)		 adds a glyph to the payload
+	allow_duplicate()		 turns this feature on or off for this glyph
+	-old?-
+	parents ($parents)
+	inherit ($parent)
+	
+	
+Dictionary:
+	get  ($word)			 searches the word index
+	find ($filter)			 searches word entries for matches
+	
+	
+	
+	
+Standardize:
+	* method names:
+		* consistent across sections (is/isa, has/hasa)
+	* input:
+		* rely on strings over symbols where possible
+			* most classes take glyphs and convert them down to strings
+		* $type   = a string type name (matching something from the lexicon)
+		* $filter = one or more types (string w/ colon delimiters)
+	* output:
+		* avoid any undef result
+		* all boolean results are 0=false 1=true
+		* all names are strings
+	
+Notes:
+	* do away with verbose - direct everything to a logger and let that handle it
+	

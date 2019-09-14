@@ -2,8 +2,7 @@ package Lexicon;
 
 use strict;
 use warnings;
-use Glyph;
-use JSON -convert_blessed_universally;
+use JSON;
 use File::Slurp;
 use Data::Dumper;
 
@@ -20,22 +19,71 @@ sub new {
 }
 
 
-
-#Gets a copy of a listed symbol by name.
-#Returns a safe copy of that glyph, or null if not found.
+#Gets the definition of a lexicon entry by name.
+#Returns the entry, or 0 for failure
 sub get {
 	my ($self, $name) = @_;
 
 	#is the request valid?
-	if (!defined $name) {return Glyph->new();}					#No name was requested.
-	if (ref $name eq "Glyph") {	$name = "$name";}		#it's getting it by name, no matter how it was asked
-	$name = lc $name;										#don't worry about much cleanup since dirty strings wouldn't be here
+	if (!$name) {return "";}								#No name was requested.
+	$name = lc "$name";										#don't worry about much cleanup since dirty strings wouldn't be here
 
 	#is it in the index?
-	if (!$self->{index}{$name}) {return Glyph->new();}		#Nothing listed by that name.
-
-	return $self->{index}{$name}->clone();				#return a copy of what's there
+	if (!exists $self->{index}{$name}) {return "";}			#Nothing listed by that name.
+	#if ($self->{index}{$name} eq "") {return '0';}			#this entry exists but has no parent (root)
+	return $self->{index}{$name};							#return a copy of what's there
 }
+
+sub is {
+	my ($self, $a, $b) = @_;
+	if (!$a || !$b) {return 0;}
+	if (!exists $self->{index}{$a})	{return 0;}				#reject if either item doesn't exist
+	if (!exists $self->{index}{$b}) {return 0;}				#reject if either item doesn't exist
+	return (lc($a) eq lc($b)) ? 1 : 0;						#return true if both have the exact same name
+}
+
+
+sub isa {
+	my ($self, $a, $b) = @_;
+	#print "]$a\n";
+	#print ">$b\n";
+	if (!$a || !$b) {return 0;}
+	if (!exists $self->{index}{$a}) {return 0;}					#reject if either item doesn't exist
+	if (!exists $self->{index}{$b}) {return 0;}					#reject if either item doesn't exist
+	
+	foreach my $ancestor ($self->parents($a)) {
+		if ($b eq $ancestor) { return 1; }
+	}
+	
+#	if (lc($a) eq lc($b))		{return 1;}					#if they're they same that's an immediate true
+	#print "hi!\n";
+#	foreach my $item (%{$self->{index}}) {				#see if $b is anywhere in $a's family
+		#print ">>> $b $item\n";
+#		if ($b eq "".$self->{index}{$item}) {return 1;}
+#	}
+	return 0;												#still here?  They're not related.
+}
+
+#is this a peer?
+sub islike {
+	my ($self, $a, $b) = @_;
+	return 0;
+}
+
+
+sub parents {
+	my ($self, $type) = @_;
+	if (!$type) {return [];}
+	if (!exists $self->{index}{$type}) {return [];}
+	my @results;
+	while ($type) {
+		push (@results, $type);
+		my $parent = $self->{index}{$type};
+		$type = ($parent eq $type) ? "" : $parent;						#if the parent is the same as the type, we're at root level and should stop.
+	}
+	return @results;
+	}
+
 
 sub count {
 	my ($self) = @_;
@@ -47,51 +95,72 @@ sub clear {
 	$self->{index} = {};
 }
 
+sub verbose {
+	my ($self, $value) = @_;
+	if (!$value)    {$value=0;}
+	if ($value > 1) {$value=1;}
+	$self->{verbose} = $value;
+}
+
 
 #Adds an entry to the Lexicon, tied to a parent (if any).
 #Returns a safe copy of the symbol that was created.
 sub add {
-	my ($self, $glyph, $parent) = @_;
-	if (!defined $glyph) {return error("Glyph required");}			#some symbolic information is required
-	#if (!defined $parent) {$parent = 0;}
-	if (ref $glyph ne "Glyph") {				#if what they sent isn't a glyph...
-		$glyph = Glyph->new("$glyph");			#then we will make it a glyph.
-	}
-	$glyph = $glyph->clone();					#avoid interfering with the original
-
-	#name validation and sanity check
-	my $name = "$glyph";
-	if ($name eq "") {return error("Name required");}				#glyph must be named
+	my ($self, $name, $parent) = @_;
+	if (!$name) {return error("Adding blank entry");}														#entry must be named
+	$name   = lc $name;
+	$parent = lc $parent;
+	if (exists $self->{index}{$name}) {return error("Entry $name already exists");}						#no duplicates
+	if ($parent && $parent ne $name && !exists $self->{index}{$parent}) {return error("Parent $parent does not exist");}		#parent must exist
 	
-	#prevent duplication
-	#print Dumper $self->get($name);
-	if ($self->get($name)) {return error("\"$name\" already exists");	}
+	if (!$parent) {$parent = $name;}																		#root level entries are their own parent
 
-	#assign parentage and check validity (fail on reject)
-	if ($parent) {
-		my $parent_name = "$parent";
-		$parent = $self->get($parent_name);									#use the version from the lexicon
-		if (!$parent) {return error("Parent $parent does not exist");}
-		$glyph->inherit($parent);
-	}
+	#add this entry to the lexicon index
+	$self->{index}{$name} = $parent;
+	#if ($parent) {	push (@{$self->{index}{$name}}, $parent);}
+	#if ($parent) {	push (@{$self->{index}{$name}}, @{$self->{index}{$parent}});}
+
+
+	#verify the name doesn't exist
+	#verify the parent (if any) does exist
 	
 
-	#assign it an id	
 
-	#add this glyph to the lexicon index
-	$self->{index}{$name} = $glyph;
+
 	$self->debug("Adding $name to lexicon");
 
-	return $glyph;
+	return 1;
 }
+
+
+#returns true if something exists by that name
+sub _exists {
+	my ($self, $name) = @_;
+	if ($name) { return ( exists $self->{index}{$name} ); }
+	return 0;
+}
+
+sub _parent_exists {
+	my ($self, $name) = @_;
+	if (!$name) { return 0; }
+	foreach my $child (@{$self->{index}}) {
+		if ($self->{index}{$child} eq "$name") {return 1;}
+	}
+	return 0;
+}
+
+
 
 
 sub list {
 	my ($self) = @_;
-	foreach my $name (keys %{$self->{index}}) {
-		my $glyph = $self->{index}{$name};#, "Glyph";
-		if ($glyph)  {print "$glyph: " . $glyph->toString(0) . "\n";}
+	my @result;
+	foreach my $entry (keys %{$self->{index}}) {
+		#push (@result, @{$self->{index}{$entry}});
+		print join (':', @{$self->{index}{$entry}}) . "\n";
 	}
+	#print Dumper(@result);
+	return @result;
 }
 
 
@@ -125,11 +194,7 @@ sub save {
 sub error {
 	my $message = shift || "";
 	print "! Lexicon: $message\n";
-	my $error = Glyph->new("error");
-	$error->{value} = $message;
-	my $result = Glyph->new();
-	$result->add($error);
-	return $result;
+	return 0;
 }
 
 sub debug {
@@ -148,16 +213,16 @@ sub hardLoad {
 	$self->clear();
 	
 	#root level
-	$self->add("grammar");
-	$self->add("statement");
-	$self->add("error");
-	$self->add("person");
-	$self->add("place");
-	$self->add("thing");
-	$self->add("quantity");
-	$self->add("abstract");
-	$self->add("command");
-	$self->add("data");
+	$self->add	("grammar");
+	$self->add	("statement");
+	$self->add	("error");
+	$self->add	("person");
+	$self->add	("place");
+	$self->add	("thing");
+	$self->add	("quantity");
+	$self->add	("abstract");
+	$self->add	("command");
+	$self->add	("data");
 	
 	
 	#data
@@ -172,13 +237,13 @@ sub hardLoad {
 	
 	
 	#grammar
-	$self->add	  ("word", 				"grammar");
-	$self->add	  ("symbol", 			"grammar");
-	$self->add	  ("subject", 			"grammar");
-	$self->add	  ("predicate", 		"grammar");
-	$self->add	  ("conditional", 		"grammar");
-	$self->add	  ("punctuation", 		"grammar");
-	$self->add	  ("part of speech", 	"grammar");
+	$self->add  ("word", 				"grammar");
+	$self->add  ("symbol", 				"grammar");
+	$self->add  ("subject", 			"grammar");
+	$self->add  ("predicate", 			"grammar");
+	$self->add  ("conditional", 		"grammar");
+	$self->add  ("punctuation", 		"grammar");
+	$self->add  ("part of speech", 		"grammar");
 	
 
 	#punctuation
@@ -192,19 +257,21 @@ sub hardLoad {
 
 	
 	#parts of speech
-	$self->add	  ("multiple", 			"part of speech");
-	$self->add	  ("noun", 				"part of speech");
-		$self->add("proper", 			"noun");
-	$self->add	  ("verb", 				"part of speech");
-	$self->add	  ("article", 			"part of speech");
-		$self->add("definite", 			"article");
-		$self->add("indefinite", 		"article");
-	$self->add	  ("pronoun", 			"part of speech");
-	$self->add	  ("adjective", 		"part of speech");
-	$self->add	  ("adverb", 			"part of speech");
-	$self->add	  ("preposition", 		"part of speech");
-	$self->add	  ("conjunction", 		"part of speech");
-	$self->add	  ("interjection", 		"part of speech");
+	$self->add	("multiple", 			"part of speech");
+	$self->add	("unknown",				"part of speech");
+	$self->add	("noun", 				"part of speech");
+	$self->add		("proper", 			"noun");
+	$self->add	("verb", 				"part of speech");
+	$self->add	("article", 			"part of speech");
+	$self->add		("definite", 		"article");
+	$self->add		("indefinite", 		"article");
+	$self->add	("pronoun", 			"part of speech");
+	$self->add		("posessive",		"pronoun");
+	$self->add	("adjective", 			"part of speech");
+	$self->add	("adverb", 				"part of speech");
+	$self->add	("preposition", 		"part of speech");
+	$self->add	("conjunction", 		"part of speech");
+	$self->add	("interjection", 		"part of speech");
 	
 	#gramatical elements
 	$self->add  ("element", 							"grammar");

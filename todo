@@ -6,11 +6,20 @@ Status:
 	* beginnings of a parser
 		* dev copy takes a string, parses it, then turns it back into a string
 
+Current goal:
+	* restore functionality to what it was before the refactor
+
+Next:
+	* convert Glyph over to use Lexicon and hard typing, and move it to the new interface
+	* get rule process class up (even if it may end up temporary)
+		* convert existing parser and deparser steps to rules (a temporary format is fine for now)
+		* use command symbols as handles for all rule commands (w/ parameters and output)
+
 
 Changed:
-	* fixed deep copy bug (by using Storable::dclone)
-	* improved truth/false checking (and eliminated "null" as a type)
-	* removed all outside references to internal hash properties
+	* got Parser to use the dictionary instead of the lexicon
+	* Deparser can properly expand nouns w/ articles and adjectives
+	
 
 Changes:
 	* add "value" to glyphs (only used when relevant)
@@ -18,17 +27,36 @@ Changes:
 
 
 Refactoring:
+	* after current round:
+		* move Lexicon to a global (that everything has access to) - eliminate Glyph needing to have it pointed out
+			* also remove double-lex unit tests
 	* eliminate direct access to glyph hash
 		* still a little work to be done
+	* status
+		* Things are cleaned up through to Dictionary - updating it to changes
 	
 
 Issues:
 
 
-
+Doing:
+	* reshaping lexicon output
+		* dictionary needs to get it from glyph
+		* glyph creation tries to create from a lex if given one, otherwise the glyph has no parentage
+	* glyph changes:
+		* glyphs now have a "type()", returning a string name of main parent (or "" for null)
+		* names are in use but no longer define what they are (they're the "value")
+		* no need to store parentage (lexicon handles that)
+	* goal: restore deparsing and get unit tests working again
 
 Todo list:
-	* parser needs to rely on dictionary, with lexicon as a fallback
+	* adjective properties
+		* assign properties (like height, size, etc) to adjectives in dictionary
+		* order adjectives based on properties (and avoid duplicating a type in output)
+
+	* unified logging
+		* each major class can be passed a ref to the logger
+		* logs are written to file, and optionally printed to screen
 	* work on dictionary lookups:
 		* looking up the definition for a word
 			* entries need to contain more details (singular, etc)
@@ -53,8 +81,6 @@ Todo list:
 		* pointer that keeps track of where the cursor is on the list
 			* the cursor roves from one symbol to the next, focusing on one symbol
 			
-	* get Parser to use the dictionary instead of the lexicon (which more represents types)
-	* add POD to the libraries, and use that to build documentation
 	* further development of grammar processing
 		* streamline:
 			* add support for symbol manipulation within a symbol
@@ -67,16 +93,38 @@ Todo list:
 
 
 
+Glyph Typing:
+	* goals:
+		* strict glyph typing and inheritance
+		* no outside manipulation of a glyph's parentage - limited to a few functions (inherit, revert, setParent)
+		* outsiders can only access the payload via methods, and direct array manipulation is discouraged
+	* it's possible the lexicon may need to go below glyph
+		* this allows glyph to handle more of the typing, and make types more strict
+			* much less lexicon checking, and removes the need for anything to edit a glyph's parentage
+		* lexicon would have to change so it doesn't rely on glyphs at all
+			* traits have to be name-based (with the glyph doing the lookups)
+			* parents are by name 
+		* when creating a glyph from a type, the glyph references the lexicon and builds it to type
+			* traits associated with a lextype are merged into the glyph's payload
+		* glyphs never write to the lexicon - they only read it
+		* all glyphs need access to the same lexicon
+			* for now, the entire package is assigned a lexicon to use, and the functions for using it are private-ish
+			
+
+
+
 New Glyph Functions:
 	* overloads:
 		* look for a way to impersonate an array if referenced like one - return payload
-
+		* all functions return glyph responses.  These should evaluate as true or false on a boolean check
 	* info:
 		* 
 	* payload:
-		* payload()   - returns the payload as an array of whatever
+		* list()      - returns the payload as an array of whatever
 		* clear()     - empties the payload.
 		* count()     - the number of payload items 
+		* add()       - adds one or more items to the payload
+		* merge()     - given a list of symbols, will merge symbols in (rather than just adding them)
 		* peek()      - returns a copy of the matching payload item.  accepts a type or an index
 		* pop()       - returns the matching payload item, removing it from the owner (doubles as a delete).  type or index.
 		* has(type)   - returns a copy of payload with a direct match (first one it sees)
@@ -91,8 +139,9 @@ New Glyph Functions:
 		* error(message)   - returns an error glyph w/ embedded message
 		* clone()          - creates a deep copy of the glyph.  ID preserved.
 		* spawn()          - creates a new glyph with the creator as its parent.  new id.
-		
-	* list manipulation:
+
+Agent (in need of a better name)
+	* list manipulation: (goes in another Agent class)
 		* {cursor}          - the index id the cursor is currently at
 		* return()			- returns the cursor to its previous position (only tracks one)
 		* next()			- moves the cursor backwards by one
@@ -101,6 +150,9 @@ New Glyph Functions:
 		* cleave(type) 		- removes an item from the targeted word and inserts it as a word before or after
 		* merge(next/prev)  - 
 		
+
+
+
 
 Editing Walkthrough:
 	* given a symbol, marked as a list, with a payload of symbols
@@ -137,8 +189,9 @@ Glyph Changes:
 
 Standards:
 	* strict layering:
-		* Glyph never touches Lexicon, Dictionary, or other higher level classes
-			* this means that all ancestry is purely by name or number
+		* each module fits within a clear layer
+		* Lexicon never touches Glyph, and Glyph never touches Dictionary, Parser, etc.
+		
 		* Lexicon never touches Dictionary or Parser, though it relies heavily on Glyph
 		* Dictionary never touches Parser, though it relies heavily on Glyph and Lexicon
 	* any function that normally returns a glyph must ALWAYS return a glyph
@@ -147,5 +200,9 @@ Standards:
 
 
 
-
+Study:
+	* predicate logic vs propositional logic.
+		* proposition - statement is either true or false
+	* modus ponens - "if p then q", and p=true, then assumes q=true
+	
 

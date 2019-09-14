@@ -1,0 +1,24 @@
+Current Focus:
+	* build out conversion between natural and symbolic language - Parser and Deparser
+		* this involves the Lexicon and Glyphs (basis of symbol system) and Dictionary (word definitions)
+		* involves some limited symbol manipulation during parsing
+
+
+
+Planned Modules:
+	Current:
+	* Lexicon 		- controls all symbol typing and hierarchy
+	* Glyph			- data structure used for nearly everything
+	* Dictionary	- index of plaintext words and multiple meanings (not kbase, just word types and associations)
+	* Parser		- handles the act of converting between symbols and natural language
+
+
+
+
+Types of Logic to support:
+	* lists - allows a list of symbols to be collated, prioritized, sorted, and culled back
+
+
+
+Types of Data to support:
+	* people - 

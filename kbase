@@ -1,0 +1,64 @@
+KBase notes:
+
+Terms:
+	* entry   - refers to the collection of data associated with a thing.  Multiple may exist per subject.
+	* subject - refers to the information being referred to, with entries describing it
+
+
+Role:
+	* the k-base is a collection of components that stores and processes information
+
+
+
+kbase format:
+	* entries - the main db, stores primary info on a variety of subjects and actions
+		* supported by the dictionary, but the dictionary is mostly focused on vocabulary, not meaning
+		* some major info (like adjective associations) MAY go into dictionary
+
+
+Types of data to store:
+	
+	* information about people (users, other people, and abstract "people")
+	* processes and procedures (for performing tasks and troubleshooting)
+	* relationships between entries
+
+
+Types of Data in entries:
+	* properties - most types of subjects have properties associated with them
+		* many subjects have "prototype" info, listing common or required properties
+		* properties may be required (people have names, known or not) others are optional (not all people have jobs) 
+	* values - most types of numeric data have a numeric range (min, max, and labels for ranges of values within them)
+		* this is how something with a temp of 20C would be called "cold" and 100C "hot"
+
+
+Relationship Table:
+	* this is a general purpose table that links subjects to other subjects
+		* if "http" is a type of "service", there is a line saying that "http ISA service"
+	* it needs to support:
+		* word and subject association - "door" points to "house, open, closed, knock" etc
+		
+	* multiple link types are used, all made to be easily read/written by hand (for bulk entry)
+		* A IS  B  - says that A and B are co-equal (at least under some conditions)
+		* A ISA B  - says that A is (at least under some conditions) a subtype of B
+		* A LIKE B - says that A is a peer of B (child of the same parent)
+		* A ASSOCIATE B - says that there is a (vague) link between A and B - link is scorable
+		* ALL A HAVE B - generalization that anything that's an A will have a property B (ALL people HAVE names)
+		* SOME A HAVE B - 
+	* as far as possible relationship types should be supported by glyphs
+		* they definitely need to be coherent in the Lexicon
+	* internal consistency checks - done across the board, but also done whenever info is added
+	* conditions - most links aren't hard, and conflicting rules are allowed
+
+
+
+Word Association:
+	* word association is used to help the system work out context where there is ambiguity
+	* it uses other words in a sentence, or from other recent inputs, to help pick one
+	* dictionary words, especially ones with multiple definitions, have links like this
+	* a multi-entry subject can retrieve a list of all words, tied to their entry
+
+
+How does it know the properties of a Person (without being explicitly told)?
+	* the system is driven to assign common data between related entries to a shared property
+	* it can compare similar entries and look for common factors
+		* these common factors can be turned into a possible generalization (ex: "all people have names")

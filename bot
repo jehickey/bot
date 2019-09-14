@@ -11,9 +11,30 @@ use Parser;
 
 my $lex = Lexicon->new();
 $lex->load();
+$Glyph::lex = $lex;
+
+#print Dumper $lex->{index};
+
+#my $gg = Glyph->new("boolean");
+#my $result = $lex->isa("boolean","data");
+#print "= $result\n";
+
+#print "\n\n";
+
+#exit;
+
+#$lex->add("root");
+#$lex->add("alpha", "root");
+#$lex->add("beta",  "root", "weird");
+
+#print Dumper $lex;
+#print "\n\n";
+#print Dumper $lex->list();
+
+#print join ("\n", $lex->list());
+
+
 my $dict = Dictionary->new($lex);
-
-
 $dict->add("the",    "definite");
 $dict->add("a",		 "indefinite");
 $dict->add("boy", 	 "noun");
@@ -25,11 +46,10 @@ $dict->add("red", 	 "adjective");
 $dict->add(".", 	 "terminator");
 
 print $dict->list();
-
 print "\n";
 
 my $parser = Parser->new($lex, $dict);
-my $input = "the tall boy dropped a big red ball.";
+my $input = "the tall boy dropped a red big ball.";
 print "INPUT:     $input\n";
 
 my @words = $parser->parse($input);
@@ -37,24 +57,19 @@ my @words = $parser->parse($input);
 print "PARSED:    @words\n";
 
 print "EXPANDED:  ";
-foreach my $g (@words) {print $g->toString(0);}
+foreach my $g (@words) {print $g->toString(0) . " ";}
 print "\n";
 
 my @words2 = $parser->deparse(@words);
-
 print "DEPARSED:  @words2\n";
 
 print "\n";
-exit;
+#exit;
 my $str = "noun>boy:definite:adjective>tall";
-print "FORMATTED: $str\n";
-
-my $g = Glyph->new($str);
-print "EXPANDED:  " . $g->toString(0) . "\n";
-print Dumper $g;	
-	
-#print Dumper @res;
-
+my $exp = Glyph->new($str);
+print "INPUT:     $str\n";
+print "EXPANDED:  " . $exp->toString(-1) . "\n";
+#print Dumper $exp;	
 
 
 print "\n\n";

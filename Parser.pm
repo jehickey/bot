@@ -28,17 +28,14 @@ sub parse {
 	my @glyphs = ();
 	
 	#define the words into a set of glyphs
-	print "DEFINED:   ";
 	foreach my $word (@words) {
 		my $glyph = $dict->get($word);
-		print $glyph->toString(0) . " ";
+		#print $glyph->toString(0) . " ";
 		if ($glyph) {push (@glyphs, $glyph);}
 	}
-	print "\n";
+	print "DEFINED:   @glyphs \n";
 	
 	#deal with items with multiple definitions (where possible)
-	
-	
 	
 	#associate articles with their nouns
 	#go through looking for articles
@@ -49,9 +46,8 @@ sub parse {
 		my $glyph = $glyphs[$i];
 
 		if ($glyph->isa("article")) {
-			#print "art: $glyph\n";
 			if (my $noun = _find_next_symbol("noun", $i, @glyphs)) {
-				$glyph->trim("article");						#break it down into the type of article it is
+				#$glyph->trim("article");						#break it down into the type of article it is
 				$noun->add($glyph);
 				splice @glyphs, $i, 1;
 				$i--;	#compensate for loss of element
@@ -59,7 +55,6 @@ sub parse {
 		}
 		
 		if ($glyph->isa("adjective")) {
-			#print "adj: $glyph\n";
 			if (my $noun = _find_next_symbol("noun", $i, @glyphs)) {
 				$glyph->trim("adjective");						#break it down into the type of adjective it is
 				$noun->add($glyph);
@@ -76,6 +71,7 @@ sub parse {
 		}
 		
 	}
+	#print Dumper @glyphs;
 	return @glyphs;
 }
 
@@ -85,27 +81,29 @@ sub deparse {
 	my @result = @input;
 	#print "deparsing:\n";
 	for (my $i=0;  $i<@result;  $i++) {
-	#foreach my $glyph (@input) {
 		my $glyph = $result[$i];
 		if ($glyph->isa("noun")) {
-			#print "noun: $glyph\n";
-			#print Dumper $glyph;
-			
 			#needs to be a while (), and has to remove the article from the noun (pop)
-			if (my $article = $glyph->hasa("article")) {	#needs to remove the article
+			if (my $article = $glyph->pop("article")) {	#needs to remove the article
 				my $word = $dict->search($article);
-				
-				#prepend it to noun
-				if ($word) {splice (@result, $i, 0, $word);}
+				#it needs to incorporate the results, not become them
+				if (!$word) {return Glyph->new("unknown", $word->toString(0));}
+				splice (@result, $i, 0, $word);				#prepend it to noun
 				$i++;
 			}
 			#get a list of any adjectives it has
-			my @adjectives = ();
-			if (my $adj = $glyph->hasa("adjective")) {
-				print "!!! $adj\n";
-				push (@adjectives, $adj);
+			my @adjectives;
+			while (my $adj = $glyph->pop("adjective")) {
+				push(@adjectives, $adj);
 			}
-			#add them to the adjective list (removing them from origin)
+			print "Adjectives: @adjectives\n";
+			
+			#sort and priorities the list by properties and imposed limits
+			
+			foreach my $adjective (@adjectives) {
+				splice (@result, $i, 0, $adjective);
+				$i++;
+			}
 			
 			
 		}
@@ -113,8 +111,12 @@ sub deparse {
 		
 		}
 	}
-	print Dumper @result;
-	return "@result";
+	my $output = "";
+	foreach my $word (@result) {
+		if ($output) {$output .= " ";}
+		$output .= ($word->value()) ? $word->value() : $word->type();
+	}
+	return $output;
 }
 
 
