@@ -50,6 +50,22 @@ ok (!$dict->add("test", "verb"), "Dictionary rejects a repeat of the same defini
 ok ($dict->add("toast", "noun"), "Dictionary still allows a different word to be added");
 
 
+#definitions with modifiers
+ok ($dict->add("red", "adjective:color"), 	"Entry with modified definition accepted");
+ok ($dict->get("red")->is("adjective"),		"Modified definition works in general lookup");
+ok ($dict->get("red", "adjective")->is("adjective"),		"Modified definition works in specific lookup");
+ok ($dict->get("red", "adjective")->value("red"),		"Modified definition works in specific lookup");
+ok ($dict->add("red", "adjective:name"), 	"Entry with modified definition accepted");
+
+
+#complex lookups
+print Dumper $dict->get("verb>test");
+is ($dict->get("verb>test")->type(),  "verb", "Complex word lookup A: pos>word");
+is ($dict->get("noun>test")->type(),  "noun", "Complex word lookup B: pos>word");
+is ($dict->get("verb>glark")->type(), "",     "Complex word lookup with bad word");
+is ($dict->get("glorx>test")->type(), "",     "Complex word lookup with bad type");
+
+#is ($dict->get("red:color")->type(), "verb", "Complex word lookup: pos>word");
 
 
 

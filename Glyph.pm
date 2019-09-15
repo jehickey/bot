@@ -6,6 +6,7 @@ package Glyph;
 #use strict;
 use warnings;
 use Storable;
+use Toolkit;
 use Data::Dumper;
 
 use overload 
@@ -20,43 +21,29 @@ our $lex;
 #rule: avoid cloning a new glyph unless necessary
 
 
-#replace "name" with "type" and limit access to it
-#add value
+
 
 sub new {
-	my ($class, $type, $value) = @_;
+	my ($class, $type, $value, %mods) = @_;
 	if (!defined $type) {$type="";}
+	if (!defined $value) {$value="";}
 	my @payload;
-	my @parents;
 	
-	#see if this is a compound type
-	if ($type =~ /[>:]+/g) {				#does it contain any formatting characters?
-		my @seg = split (':', $type);
-		for (my $i=0; $i<@seg; $i++) {
-			my @seg = split (">", $seg[$i]);
-			my $typ = $seg[0];
-			my $val = (@seg == 2) ? $seg[1] : "";
-			if ($i==0) {
-				$type  = $typ;
-				$value = $val;
-			} else {
-				push (@payload, Glyph->new($typ, $val));
-			}
+	if ($type =~ /[>:]+/g) {								#is this a compound type?
+		($type, my $newvalue, %mods) = main::parse ($type);		#any other parameters will be overwritten
+		if ($newvalue ne '') {$value = $newvalue;}
 		}
+	foreach my $mod (keys %mods) {
+		push (@payload, new Glyph($mod, $mods{$mod}));		#create the payload described by each segment
 	}
-
-
-	#validate the type string (may contain extra info)
-	if (!$lex->get($type)) {$type="";}
+	if (!$lex->get($type)) {$type="";}						#enforce typing - it's a lex type or it's null
 	
-	
-	$last_id++;
+	#$last_id++;
 	my $self = {
-		id      => $last_id,					#the lexical id of this symbol, if any
-		type    => lc $type,					#the canonical name of this symbol
-		value   => $value,						#the value, if any, that this symbol carries
-#		parents => [@parents],					#a list of names for each parent, in hierarchical order
-		payload => [@payload]					#all symbols carried by this one - in no order
+		id      => ++$last_id,								#the lexical id of this symbol, if any
+		type    => lc $type,								#the canonical name of this symbol
+		value   => $value,									#the value, if any, that this symbol carries
+		payload => [@payload]								#all symbols carried by this one - in no order
 	};
 	return bless $self, $class;
 }
@@ -69,7 +56,6 @@ sub new {
 #Is this symbol equal to another?
 sub is {
 	my ($a, $b) = @_;
-	print "??? $a $b\n";
 	return $lex->is($a, $b);
 }
 
@@ -82,10 +68,11 @@ sub isa {
 #Does this symbol carry a specific subsymbol?
 sub has {
 	my ($self, $glyph) = @_;
-	if ("$glyph" eq "") {return Glyph->new();}
-	if ("$self" eq "$glyph") {return $self->clone();}
+	#if ("$glyph" eq "") {return Glyph->new();}
+	#if ("$self" eq "$glyph") {return $self->clone();}		#maybe we don't want to do this
 	foreach my $g (@{$self->{payload}}) {
-		if ("$g" eq "$glyph") {return $g->clone();}
+		if (!$glyph) {return $g;}							#no glyph?  return the first item.
+		if ("$g" eq "$glyph") {return $g->clone();}			#return the first matching item
 	}
     return Glyph->new();
 }
@@ -238,14 +225,14 @@ sub toString {
 		return $self->{type};}										#default behavior is to stringify itself by name
 	if ($level>0) {return $self->{type}}
 	my $str = "";
-#	$str .= "[";
+	$str .= "[";
 	if ($self->{type}) { $str .= $self->{type}; }
 	if ($self->{value}) { $str .= ">" . $self->{value}; }
 
 	foreach my $item (@{$self->{payload}}) {						#Display payload
 		$str .= ":" . $item->toString($level+1);					#colon-delimited, and with less info shown
 	}
-#	$str .= "]";
+	$str .= "]";
 	return $str;
 }
 
@@ -264,6 +251,9 @@ sub isNotEqual {
 	my ($a, $b) = @_;
 	return ("$a" ne "$b");
 }
+
+
+
 
 
 1;

@@ -96,7 +96,8 @@ sub deparse {
 			while (my $adj = $glyph->pop("adjective")) {
 				push(@adjectives, $adj);
 			}
-			print "Adjectives: @adjectives\n";
+			@adjectives = _sort_adjectives(@adjectives);
+			#print "Adjectives: @adjectives\n";
 			
 			#sort and priorities the list by properties and imposed limits
 			
@@ -137,6 +138,24 @@ sub _find_next_symbol {
 	
 }
 
+
+#sorts adjectives by a given order based on any properties they have
+sub _sort_adjectives {
+	my (@adj) = @_;
+	my @order = qw( size shape age color origin material purpose );
+	my @results;
+	
+	foreach my $property (@order) {								#go through each property in order
+		for (my $i=0; $i<@adj; $i++) {							#and go through each glyph in the list
+			if ($adj[$i]->hasa($property)) {					#look for glyphs that have that property
+				push (@results, $adj[$i]);						#add it to the new list
+				splice (@adj, $i, 1);							#then remove it from the original list
+			}
+		}
+	}
+	push (@results, @adj);										#shove whatever's left to the back
+	return @results;
+}
 
 #break a string down into an array of strings for each word and punctuation.
 sub _explode_input {

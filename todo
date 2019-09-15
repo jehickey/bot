@@ -5,25 +5,26 @@ Status:
 	* Dictionary is split from Lexicon (so Lexicon is only internal words, all else goes in Dictionary)
 	* beginnings of a parser
 		* dev copy takes a string, parses it, then turns it back into a string
+	* Refit complete (at least the worst of it)
 
 Current goal:
-	* restore functionality to what it was before the refactor
+	* get adjectives to report in the correct order
 
 Next:
-	* convert Glyph over to use Lexicon and hard typing, and move it to the new interface
+	* modifiers on dictionary entries - starting with adjectives
+
+
 	* get rule process class up (even if it may end up temporary)
 		* convert existing parser and deparser steps to rules (a temporary format is fine for now)
+			* start by building the commands and adding them to the existing code
 		* use command symbols as handles for all rule commands (w/ parameters and output)
 
 
 Changed:
-	* got Parser to use the dictionary instead of the lexicon
-	* Deparser can properly expand nouns w/ articles and adjectives
+	* added "metric" family to the lexicon (initially for adjectives)
 	
 
 Changes:
-	* add "value" to glyphs (only used when relevant)
-	* make a word a value of a grammar glyph, not it's actual name
 
 
 Refactoring:
@@ -32,8 +33,6 @@ Refactoring:
 			* also remove double-lex unit tests
 	* eliminate direct access to glyph hash
 		* still a little work to be done
-	* status
-		* Things are cleaned up through to Dictionary - updating it to changes
 	
 
 Issues:

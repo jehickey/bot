@@ -4,6 +4,7 @@ use warnings;
 use Storable;
 use Data::Dumper;
 
+use Toolkit;
 use Glyph;
 use Lexicon;
 use Dictionary;
@@ -12,6 +13,32 @@ use Parser;
 my $lex = Lexicon->new();
 $lex->load();
 $Glyph::lex = $lex;
+
+
+#my $res = parse ("alpha");
+#print "Result is \"$res\"\n";
+
+#my ($res, $value) = parse ("alpha>beta");
+#print "Result is \"$res\", value is \"$value\"\n";
+
+
+#my @thing = parse ("alpha>1:beta>4:gamma>0:delta");
+
+#my ($type, $value, %hash) = parse ("alpha>1:beta>4:gamma>0:delta");
+#print "Result is \"$type\", value is \"$value\"\n";
+#print Dumper \%hash;
+
+#my $g = new Glyph(parse ("list>stuff:name>joe:height>14:definite"));
+#print Dumper $g;
+
+#exit;
+
+#my $strx = "this>is:a:test";
+#if ($strx =~ /(\S+?)[>:]/g) {
+#	print ">$1\n";
+#}
+
+
 
 #print Dumper $lex->{index};
 
@@ -40,13 +67,18 @@ $dict->add("a",		 "indefinite");
 $dict->add("boy", 	 "noun");
 $dict->add("dropped", "verb");
 $dict->add("ball", 	 "noun");
-$dict->add("tall", 	 "adjective");
-$dict->add("big", 	 "adjective");
-$dict->add("red", 	 "adjective");
+$dict->add("tall", 	 "adjective:height");
+$dict->add("big", 	 "adjective:size");
+$dict->add("red", 	 "adjective:color");
 $dict->add(".", 	 "terminator");
 
-print $dict->list();
-print "\n";
+#print Dumper $dict->{list}{red};
+
+#print Dumper $dict->get("red");
+
+#exit;
+#print $dict->list();
+#print "\n";
 
 my $parser = Parser->new($lex, $dict);
 my $input = "the tall boy dropped a red big ball.";
@@ -57,7 +89,7 @@ my @words = $parser->parse($input);
 print "PARSED:    @words\n";
 
 print "EXPANDED:  ";
-foreach my $g (@words) {print $g->toString(0) . " ";}
+foreach my $g (@words) {print $g->toString(-1) . " ";}
 print "\n";
 
 my @words2 = $parser->deparse(@words);

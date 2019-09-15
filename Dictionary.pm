@@ -10,8 +10,14 @@ use Glyph;
 use Lexicon;
 
 
-#on this one avoid any public {keys}
-#just private data and public methods
+#changes:
+#the index is now a hash, with individual entries compressed into one glyph
+#entries in the index are now a glyph
+	#the glyph represents all entries for that name contains all sub-entries
+	#subentries are glyphs that match the type for a dictionary entry
+		#individual information is stored as their own payload
+
+
 
 
 my $lex;
@@ -21,7 +27,8 @@ sub new {
 	$lex = $lexicon;
 	if (!$lex) {print "Dictionary warning: no lexicon!\n";}
 	my $self = {
-		index => []
+		index => [],
+		list  => new Glyph("list")
 	};
 
 	return bless $self, "Dictionary";
@@ -30,7 +37,7 @@ sub new {
 
 #Retrieves a glyph representing a word's dictionary definition
 #Always returns a valid glyph.  On failure it returns a blank glyph with the word's name on it
-sub get {
+sub get2 {
 	if (!$lex) {return;}
 
 	my ($self, $word, $def, @traits) = @_;
@@ -70,6 +77,42 @@ sub get {
 }
 
 
+sub get {
+	if (!$lex) {return;}
+	my ($self, $word, $def) = @_;
+	$word = _clean($word);
+	$def  = _clean($def);
+	if (!$word) {return Glyph->new();}								#no word given for this request
+
+	
+	if ($word =~ /[:>]+/g) {										#complex name
+		($def, $word, my %mods) = main::parse($word);
+	}
+
+	my $entry = $self->{list}{$word};
+	if (!$entry) {return Glyph->new();}								#no entry for this word
+
+	
+	my @matches = ();
+	foreach my $sub (@{$entry->{payload}}) {
+		if (!$def || $sub->is($def)) {
+			push (@matches, $sub);
+		}
+	}
+	
+	my $result = Glyph->new("",$word);
+	if (@matches == 0) {return $result;}
+	if (@matches == 1) {
+		return $matches[0];
+		}
+	$result->type("multiple");
+	foreach my $match (@matches) {
+		$result->add($match);
+	}
+	return $result;
+}
+
+
 #search the dictionary for the best match it can find for a given symbol
 sub search {
 	my ($self, $filter) = @_;
@@ -80,7 +123,7 @@ sub search {
 		my $word = $entry->{word};
 		my $def  = $entry->{def};
 		#compare to filter
-		if ($def eq $filter) {return new Glyph($def, $word);}
+		if ($def eq $filter) {return Glyph->new($def, $word);}
 	}
 	return Glyph->new();
 }
@@ -93,9 +136,18 @@ sub add {
 	if (!defined $self)					{print "Must be called as an object\n";			return 0;}
 	if (!$word)        					{print "Word required\n"; 						return 0;}
 	if (!$lex->get($def))				{print "Valid definition required.\n";			return 0;}
-	if (!$lex->isa($def, "grammar"))	{print "Definition must be a grammar type\n";	return 0;}
+	#if (!$lex->isa($def, "grammar"))	{print "Definition must be a grammar type\n";	return 0;}
 	if ($self->get($word, $def))		{print "Two defintions of the same type\n";		return 0;}
 	push (@{$self->{index}}, {word=>$word, def=>$def});
+		
+	
+	if (!$self->{list}{$word}) {								#if this is the first entry for that word
+		$self->{list}{$word} = Glyph->new("list", $word);		#create a list glyph for it
+	}
+	
+	my $glyph = Glyph->new($def, $word);						#this is the glyph for this particular entry
+	$self->{list}{$word}->add($glyph);
+	#print ">>>>>>$def>$word\n";  print Dumper $glyph;
 	
 }
 

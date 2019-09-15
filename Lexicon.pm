@@ -28,6 +28,11 @@ sub get {
 	if (!$name) {return "";}								#No name was requested.
 	$name = lc "$name";										#don't worry about much cleanup since dirty strings wouldn't be here
 
+	if ($name =~ /(\S+?)[>:]/g) {
+		$name = $1;
+	}
+
+
 	#is it in the index?
 	if (!exists $self->{index}{$name}) {return "";}			#Nothing listed by that name.
 	#if ($self->{index}{$name} eq "") {return '0';}			#this entry exists but has no parent (root)
@@ -117,8 +122,6 @@ sub add {
 
 	#add this entry to the lexicon index
 	$self->{index}{$name} = $parent;
-	#if ($parent) {	push (@{$self->{index}{$name}}, $parent);}
-	#if ($parent) {	push (@{$self->{index}{$name}}, @{$self->{index}{$parent}});}
 
 
 	#verify the name doesn't exist
@@ -216,13 +219,14 @@ sub hardLoad {
 	$self->add	("grammar");
 	$self->add	("statement");
 	$self->add	("error");
+	
 	$self->add	("person");
 	$self->add	("place");
 	$self->add	("thing");
-	$self->add	("quantity");
 	$self->add	("abstract");
 	$self->add	("command");
 	$self->add	("data");
+	$self->add	("property");
 	
 	
 	#data
@@ -233,8 +237,30 @@ sub hardLoad {
 	$self->add  ("number",				"data");
 	$self->add  	("integer",			"number");
 	$self->add  	("real",			"number");
+	$self->add	("entry",				"data");
 	$self->add  ("list", 				"data");
 	
+
+	#property
+	$self->add	("weight",				"property");
+	$self->add	("size",				"property");
+	$self->add		("height",			"size");
+	$self->add		("width",			"size");
+	$self->add		("depth",			"size");
+	$self->add	("shape",				"property");
+	$self->add	("quantity",			"property");
+	$self->add	("age",					"property");
+	$self->add	("color",				"property");
+	$self->add	("origin",				"property");
+	$self->add	("material",			"property");
+	$self->add	("speed",				"property");
+	$self->add	("frequency",			"property");
+	$self->add	("distance",			"property");
+	$self->add	("time",				"property");
+	$self->add	("length",				"property");
+	$self->add	("name",				"property");
+
+
 	
 	#grammar
 	$self->add  ("word", 				"grammar");
